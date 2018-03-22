@@ -1,0 +1,184 @@
+<!--
+  - Copyright (c) 2017 Cloudware S.A. All rights reserved.
+  -
+  - This file is part of casper-server-overlay.
+  -
+  - casper-server-overlay is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU Affero General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - casper-server-overlay  is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU Affero General Public License
+  - along with casper-server-overlay.  If not, see <http://www.gnu.org/licenses/>.
+  -
+ -->
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="casper-server-overlay">
+  <template>
+    <style>
+      :host { 
+        display: none;
+        position: fixed;
+        z-index: 8001;
+        width: 100%;
+      }
+
+      .Aligner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 8001;
+      }
+
+      .Aligner-item {
+        flex: 1;
+        text-align: center;
+        color: #D8D8D8;
+      }
+
+      .Aligner-item p {
+        font-size: 1.5em;
+        line-height: 1.5em;
+      }
+
+      .content {
+        opacity: 0.3;
+        transition: opacity 5s;
+      }
+
+      .backdrop {
+        background-color: #000000;
+        opacity: 0.7;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 8000;
+        width: 100%;
+        height: 100vh;
+      }
+
+    </style>
+    <div class="content" id="content">
+      <div class="Aligner">
+        <div class="Aligner-item">
+         <img src="[[icon.src]]" alt="[[icon.alt]]">
+         <p>[[description]]</p>
+        </div>
+      </div>
+      <div class='backdrop'>sss</div>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * `casper-server-overlay`
+     * Modal overlay that blocks the UI during server interstatuss
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class CasperServerOverlay extends Polymer.Element {
+      static get is () { 
+        return 'casper-server-overlay'; 
+      }
+
+      static get properties () {
+        return {
+          description: String,
+          icon: String,
+          status: {
+            type: String,
+            observer: '_updateStatus'
+          }
+        };
+      }
+
+      ready () {
+        super.ready();
+        //this.updateStyles({
+        //  '--element-display': 'none'
+        //});
+        window.addEventListener('online', e => this._updateOnlineStatus(e));
+        window.addEventListener('offline', e => this._updateOnlineStatus(e));
+
+        window.addEventListener('casper-show-overlay', e => this._onCasperShowOverlay(e));
+        window.addEventListener('casper-connected', e => this._onCasperConnected(e));
+        window.addEventListener('casper-disconnected', e => this._onCasperDisconnected(e));
+
+
+      }
+
+      _onCasperShowOverlay (event) {
+        this.status = 'loading-page';
+        if ( event.detail.message ) {
+          this.description = event.detail.message; // TODO Já vem traduzida??
+        }
+      }
+
+      _onCasperConnected (event) {
+        //this.status = socket-disconnect'
+      }
+
+      _onCasperDisconnected (event) {
+        this.status = 'socket-disconnect';
+      }
+ 
+      _updateOnlineStatus (event){
+        this.status = event.type;
+        this.currentStatus();
+      }
+
+      connectedCallback () {
+        super.connectedCallback();
+      }
+
+      _updateStatus (newValue, oldValue) {
+
+        if ( this.status === 'online' ) {
+          this.style.display = 'none';
+          return;
+        }
+        switch (this.status) {
+          case 'offline':
+            this.icon        = {src: '/static/no-connection@2x.png', alt: 'No connection'}
+            this.description = "Network: Offline - Por favor verifque a sua ligação a internet"
+            break;
+          case 'socket-disconnect':
+            this.icon        = {src: '/static/no-connection@2x.png', alt: 'No connection'}
+            this.description = "Sem ligação (C) - Por favor verifque a sua ligação a internet"
+            break;
+          case 'no-connection':
+            this.icon        = {src: '/static/no-connection@2x.png', alt: 'No connection'}
+            this.description = "Sem ligação - Por favor verifque a sua ligação a internet"
+            break;
+          case 'connected-to-host':
+            this.icon        = {src: '/static/connected-to-host@2x.png', alt: 'Connected to host'}
+            this.description = "A establecer a ligação com o servidor"
+            break;
+          case 'loading-page':
+            this.icon        = {src: '/static/loading-page@2x.png', alt: 'Loading page'}
+            this.description = "A carregar a página"
+            break;
+          default:
+        }
+        this.style.display = 'block';
+        this.$.content.style.opacity = 1.0;
+      }
+
+    }
+
+    window.customElements.define(CasperServerOverlay.is, CasperServerOverlay);
+  </script>
+</dom-module>

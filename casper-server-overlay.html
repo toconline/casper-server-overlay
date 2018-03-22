@@ -18,65 +18,39 @@
   -
  -->
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
 
 <dom-module id="casper-server-overlay">
   <template>
     <style>
-      :host { 
-        display: none;
-        position: fixed;
-        z-index: 8001;
-        width: 100%;
-      }
 
-      .Aligner {
+      :host {
         display: flex;
+        background: black;
+        width: 100%;
+        height: 100vh;
         align-items: center;
         justify-content: center;
-        height: 100vh;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 8001;
+        opacity: 0;
+        transition: opacity 3s;
+        z-index: 8000;
       }
 
-      .Aligner-item {
-        flex: 1;
+      div {
+        width: 500px;
+        height: 500px;
+      }
+
+      p {
         text-align: center;
         color: #D8D8D8;
-      }
-
-      .Aligner-item p {
         font-size: 1.5em;
         line-height: 1.5em;
       }
-
-      .content {
-        opacity: 0.3;
-        transition: opacity 5s;
-      }
-
-      .backdrop {
-        background-color: #000000;
-        opacity: 0.7;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 8000;
-        width: 100%;
-        height: 100vh;
-      }
-
     </style>
-    <div class="content" id="content">
-      <div class="Aligner">
-        <div class="Aligner-item">
-         <img src="[[icon.src]]" alt="[[icon.alt]]">
-         <p>[[description]]</p>
-        </div>
-      </div>
-      <div class='backdrop'>sss</div>
+    <div>
+      <img src="[[icon.src]]" alt="[[icon.alt]]">
+      <p>[[description]]</p>
     </div>
   </template>
 
@@ -89,7 +63,7 @@
      * @polymer
      * @demo demo/index.html
      */
-    class CasperServerOverlay extends Polymer.Element {
+    class CasperServerOverlay extends Polymer.mixinBehaviors([Polymer.IronOverlayBehavior], Polymer.Element) {
       static get is () { 
         return 'casper-server-overlay'; 
       }
@@ -107,15 +81,17 @@
 
       ready () {
         super.ready();
+        //this.withBackdrop = true;
         //this.updateStyles({
         //  '--element-display': 'none'
         //});
-        window.addEventListener('online', e => this._updateOnlineStatus(e));
-        window.addEventListener('offline', e => this._updateOnlineStatus(e));
+        //window.addEventListener('online', e => this._updateOnlineStatus(e));
+        //window.addEventListener('offline', e => this._updateOnlineStatus(e));
 
         window.addEventListener('casper-show-overlay', e => this._onCasperShowOverlay(e));
         window.addEventListener('casper-connected', e => this._onCasperConnected(e));
         window.addEventListener('casper-disconnected', e => this._onCasperDisconnected(e));
+        window.addEventListener('casper-signed-in', e => this._onCasperSignedIn(e));
 
 
       }
@@ -147,7 +123,8 @@
       _updateStatus (newValue, oldValue) {
 
         if ( this.status === 'online' ) {
-          this.style.display = 'none';
+          this.style.opacity = 0.0;
+          this.close();
           return;
         }
         switch (this.status) {
@@ -173,10 +150,20 @@
             break;
           default:
         }
-        this.style.display = 'block';
-        this.$.content.style.opacity = 1.0;
+        //this.style.display = 'block';
+        this.open();
+        this._signInTimer = setTimeout(() => this._makeVisible(), 500);
       }
 
+      _makeVisible () {
+        console.log("_makeVisible", this.status);
+        this.style.opacity = 0.7;
+      }
+
+      _onCasperSignedIn (event) {
+        this.status = 'online';
+      } 
+      
     }
 
     window.customElements.define(CasperServerOverlay.is, CasperServerOverlay);

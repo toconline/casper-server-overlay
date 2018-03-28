@@ -164,6 +164,8 @@
         this._visibilityTimer = undefined;
         this.$.spinner.style.display = 'none';
         window.addEventListener('casper-show-overlay', e => this._onCasperShowOverlay(e));
+        window.addEventListener('casper-dismiss-overlay', e => this._onCasperSignedIn(e));
+        
         window.addEventListener('casper-connected', e => this._onCasperConnected(e));
         window.addEventListener('casper-disconnected', e => this._onCasperShowOverlay(e));
         window.addEventListener('casper-signed-in', e => this._onCasperSignedIn(e));

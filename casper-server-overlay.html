@@ -66,7 +66,7 @@
         line-height: 1.5em;
       }
     </style>
-    <div class="spinner" on-tap="_try_reConnection">
+    <div class="spinner">
       <img id="image" alt="[[description]]">
       <svg id="spinner" width="150px" height="150px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" >
         <g transform="rotate(0 50 50)">
@@ -150,11 +150,12 @@
 
       static get properties () {
         return {
+          socket: Object,
           description: String,
           icon: Object,
-          status: {
-            type: String,
-            observer: '_updateStatus'
+          visible: {
+            type: Boolean,
+            observer: '_updateVisible'
           }
         };
       }
@@ -162,36 +163,17 @@
       ready () {
         super.ready();
         this._visibilityTimer = undefined;
+        this._disconnected = false;
         this.$.spinner.style.display = 'none';
+
         window.addEventListener('casper-show-overlay', e => this._onCasperShowOverlay(e));
-        window.addEventListener('casper-dismiss-overlay', e => this._onCasperSignedIn(e));
-        
-        window.addEventListener('casper-connected', e => this._onCasperConnected(e));
-        window.addEventListener('casper-disconnected', e => this._onCasperShowOverlay(e));
+        window.addEventListener('casper-dismiss-overlay', e => this._onHideOverlay(e));
+        window.addEventListener('casper-disconnected', e => this._onCasperDisconnected(e));
         window.addEventListener('casper-signed-in', e => this._onCasperSignedIn(e));
-
-        // // Companies Listeners
-        // window.addEventListener('loading-companies', e => this._onCasperShowOverlay(e));
-        // window.addEventListener('error-loading-companies', e => this._onCasperShowOverlay(e));
-        // window.addEventListener('finished-loading-companies', e => this._onCasperSignedIn(e));
-
-        // Resource Listeners
-        window.addEventListener('loading-resource',          e => this._onResourceLoading(e));
-        window.addEventListener('error-loading-resource',    e => this._onResourceLoading(e));
-        window.addEventListener('finished-loading-resource', e => this._onResourceFinished(e));
-
+        
+        this.addEventListener('mousemove', e => this._moveHandler(e));
+        this.addEventListener('mouseup'  , e => this._mouseUpHandler(e));
       }
-
-
-      _onResourceLoading(e) {
-        this._onCasperShowOverlay(e);
-      }
-
-      _onResourceFinished(e) {
-        this._onCasperSignedIn(e);
-      }
-
-
 
       connectedCallback () {
         super.connectedCallback();
@@ -204,10 +186,24 @@
         }
       }
 
+      _onHideOverlay (event) {
+        this.visible = false;
+      }
+
+      _onCasperSignedIn (event) {
+        this._disconnected = false;
+        this.visible = false;
+      }
+
+      _onCasperDisconnected (event) {
+        this._disconnected = true;
+        this._onCasperShowOverlay(event);
+      }
+
       _onCasperShowOverlay (event) {
-        this.status = 'loading-page';
+        this.disconnected = false;
         if ( event.detail.message ) {
-          this.description = event.detail.message; // TODO Já vem traduzida??
+          this.description = event.detail.message;
         }
         if ( event.detail.spinner === true ) {
           this.$.spinner.style.display = 'flex';
@@ -224,71 +220,44 @@
         } else {
           this.$.image.src = this.resolveUrl('icons/default.svg');
         }
+        this.visible = true;
       }
 
-      _onCasperConnected (event) {
-        this.status = 'online';
-      }
-
-      // _onCasperDisconnected (event) {
-      //   this.$.image.src = this.resolveUrl('icons/no-connection.svg');
-      //   this.$.spinner.style.display = 'none';
-      //   this.description = ev;
-      // }
-
-      _updateOnlineStatus (event){
-        this.status = event.type;
-        this.currentStatus();
-      }
-
-
-      _updateStatus (newValue, oldValue) {
-
-        if ( this.status === 'online' ) {
+      _updateVisible (newValue, oldValue) {
+        if ( newValue === false ) {
           this.style.opacity = 0.0;
           this.close();
           return;
+        } else {
+          this.open();
+          this._visibilityTimer = setTimeout(() => this._makeVisible(), 100);
         }
-        /*switch (this.status) {
-          case 'offline':
-            this.icon        = '/static/no-connection@2x.png';
-            this.description = "Network: Offline - Por favor verifque a sua ligação a internet";
-            break;
-          case 'socket-disconnect':
-            this.icon        = '/static/no-connection@2x.png';
-            this.description = "Sem ligação (C) - Por favor verifque a sua ligação a internet";
-            break;
-          case 'no-connection':
-            this.icon        = '/static/no-connection@2x.png';
-            this.description = "Sem ligação - Por favor verifque a sua ligação a internet";
-            break;
-          case 'connected-to-host':
-            this.icon        = '/static/connected-to-host@2x.png';
-            this.description = "A establecer a ligação com o servidor";
-            break;
-          case 'loading-page':
-            this.icon        = '/static/loading-page@2x.png';
-            this.description = "A carregar a página";
-            break;
-          default:
-        }*/
-        this.$.image.src = this.resolveUrl('icons/loading-page.svg');
-        this.open();
-        this._visibilityTimer = setTimeout(() => this._makeVisible(), 100);
       }
 
       _makeVisible () {
-        console.log("_makeVisible", this.status);
         this.style.opacity = 0.7;
       }
 
-      _onCasperSignedIn (event) {
-        this.status = 'online';
+      _moveHandler (event) {
+        this._reconnect();
       }
 
+      _mouseUpHandler (event) {
+        this._reconnect();
+      }
 
-      _try_reConnection (event) {
-        this.socket.connect();
+      _reconnect () {
+        if ( this._disconnected ) {
+          this.socket.validateSession();
+          this._onCasperShowOverlay({ 
+            detail: {
+              message: 'i18n_connecting_to_server',
+              spinner: true,
+              icon: 'connecting'
+            }
+          });
+          this._disconnected = false;
+        }
       }
 
     }

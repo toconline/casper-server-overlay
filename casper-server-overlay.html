@@ -36,7 +36,7 @@
         opacity: 0;
         transition: opacity 3s;
         z-index: 8000;
-        fill: yellow;
+        fill: white;
       }
 
       .spinner {
@@ -66,7 +66,7 @@
         line-height: 1.5em;
       }
     </style>
-    <div class="spinner">
+    <div class="spinner" on-tap="_try_reConnection">
       <img id="image" alt="[[description]]">
       <svg id="spinner" width="150px" height="150px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" >
         <g transform="rotate(0 50 50)">
@@ -144,8 +144,8 @@
      * @demo demo/index.html
      */
     class CasperServerOverlay extends Polymer.mixinBehaviors([Polymer.IronOverlayBehavior], Polymer.Element) {
-      static get is () { 
-        return 'casper-server-overlay'; 
+      static get is () {
+        return 'casper-server-overlay';
       }
 
       static get properties () {
@@ -167,7 +167,29 @@
         window.addEventListener('casper-connected', e => this._onCasperConnected(e));
         window.addEventListener('casper-disconnected', e => this._onCasperShowOverlay(e));
         window.addEventListener('casper-signed-in', e => this._onCasperSignedIn(e));
+
+        // // Companies Listeners
+        // window.addEventListener('loading-companies', e => this._onCasperShowOverlay(e));
+        // window.addEventListener('error-loading-companies', e => this._onCasperShowOverlay(e));
+        // window.addEventListener('finished-loading-companies', e => this._onCasperSignedIn(e));
+
+        // Resource Listeners
+        window.addEventListener('loading-resource',          e => this._onResourceLoading(e));
+        window.addEventListener('error-loading-resource',    e => this._onResourceLoading(e));
+        window.addEventListener('finished-loading-resource', e => this._onResourceFinished(e));
+
       }
+
+
+      _onResourceLoading(e) {
+        this._onCasperShowOverlay(e);
+      }
+
+      _onResourceFinished(e) {
+        this._onCasperSignedIn(e);
+      }
+
+
 
       connectedCallback () {
         super.connectedCallback();
@@ -203,7 +225,7 @@
       }
 
       _onCasperConnected (event) {
-        
+        this.status = 'online';
       }
 
       // _onCasperDisconnected (event) {
@@ -211,7 +233,7 @@
       //   this.$.spinner.style.display = 'none';
       //   this.description = ev;
       // }
- 
+
       _updateOnlineStatus (event){
         this.status = event.type;
         this.currentStatus();
@@ -250,7 +272,7 @@
         }*/
         this.$.image.src = this.resolveUrl('icons/loading-page.svg');
         this.open();
-        this._visibilityTimer = setTimeout(() => this._makeVisible(), 500);
+        this._visibilityTimer = setTimeout(() => this._makeVisible(), 100);
       }
 
       _makeVisible () {
@@ -260,7 +282,12 @@
 
       _onCasperSignedIn (event) {
         this.status = 'online';
-      } 
+      }
+
+
+      _try_reConnection (event) {
+        this.socket.connect();
+      }
 
     }
 

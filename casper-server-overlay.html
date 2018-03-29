@@ -71,7 +71,9 @@
     </style>
     <div class="spinner">
       <img id="image" alt="[[description]]">
-      <div id="spinner"></div> <!-- spinner placeholder -->
+      <div id="spinner">
+
+      </div> <!-- spinner placeholder -->
     </div>
     <p>[[description]]</p>
   </template>
@@ -167,13 +169,14 @@
         }
         if ( event.detail.spinner === true ) {
           this.$.spinner.style.display = 'block';
+
           if(event.detail.loading_icon != undefined){
             var loading_element = document.createElement(event.detail.loading_icon);
-            var before_element  = this.$.spinner.childNodes[0];
-            this.$.spinner.replaceChild(loading_element, before_element);
           }else{
-            this.$.spinner.appendChild(document.createElement('loading-icon-01'));
+            var loading_element = document.createElement('loading-icon-01')
           }
+          var before_element  = this.$.spinner.childNodes[0];
+          this.$.spinner.replaceChild(loading_element, before_element);
         } else {
           this.$.spinner.style.display = 'none';
         }

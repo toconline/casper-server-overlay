@@ -19,6 +19,9 @@
  -->
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="loading_components/loading-icon-01.html">
+<link rel="import" href="loading_components/loading-icon-02.html">
+<link rel="import" href="loading_components/loading-icon-03.html">
 
 <dom-module id="casper-server-overlay">
   <template>
@@ -32,7 +35,7 @@
         background: black;
         width: 100%;
         height: 100vh;
-        opacity: 0;
+        opacity: 1;
         transition: opacity 3s;
         z-index: 8000;
         fill: white;
@@ -40,8 +43,8 @@
 
       .spinner {
         position: relative;
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
       }
 
       svg {
@@ -52,8 +55,8 @@
 
       #image {
         position: absolute;
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
         top: 0;
         left: 0;
       }
@@ -64,71 +67,11 @@
         font-size: 1.5em;
         line-height: 1.5em;
       }
+
     </style>
     <div class="spinner">
       <img id="image" alt="[[description]]">
-      <svg id="spinner" width="150px" height="150px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" >
-        <g transform="rotate(0 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.9166666666666666s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(30 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.8333333333333334s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(60 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.75s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(90 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.6666666666666666s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(120 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.5833333333333334s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(150 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.5s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(180 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.4166666666666667s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(210 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.3333333333333333s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(240 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.25s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(270 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.16666666666666666s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(300 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="-0.08333333333333333s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-        <g transform="rotate(330 50 50)">
-          <rect x="47" y="24" rx="9.4" ry="4.8" width="6" height="12">
-            <animate attributeName="opacity" values="1;0" times="0;1" dur="1s" begin="0s" repeatCount="indefinite"/>
-          </rect>
-        </g>
-      </svg>
+      <div id="spinner"></div> <!-- spinner placeholder -->
     </div>
     <p>[[description]]</p>
   </template>
@@ -165,7 +108,7 @@
         this._visibilityTimer = undefined;
         this._disconnected = false;
         this._connecting = false;
-        this.$.spinner.style.display = 'none';
+        // this.$.spinner.style.display = 'none';
 
         this._boundOnCasperShowOverlay  = this._onCasperShowOverlay.bind(this);
         this._boundOnHideOverlay        = this._onHideOverlay.bind(this);
@@ -179,7 +122,7 @@
         window.addEventListener('casper-disconnected'   , this._boundOnCasperDisconnected);
         window.addEventListener('casper-signed-in'      , this._boundOnCasperSignedIn);
         document.addEventListener('keydown', this._boundCloseByUser);
-        
+
         this.addEventListener('mousemove', this._moveHandler);
         this.addEventListener('mouseup'  , this._mouseUpHandler);
       }
@@ -223,7 +166,14 @@
           this.description = event.detail.message;
         }
         if ( event.detail.spinner === true ) {
-          this.$.spinner.style.display = 'flex';
+          this.$.spinner.style.display = 'block';
+          if(event.detail.loading_icon != undefined){
+            var loading_element = document.createElement(event.detail.loading_icon);
+            var before_element  = this.$.spinner.childNodes[0];
+            this.$.spinner.replaceChild(loading_element, before_element);
+          }else{
+            this.$.spinner.appendChild(document.createElement('loading-icon-01'));
+          }
         } else {
           this.$.spinner.style.display = 'none';
         }
@@ -271,7 +221,7 @@
       _onCloseByUser (event) {
         console.log(event);
         if ( this._disconnected == false && this._connecting == false ) {
-          this.visible = false; 
+          this.visible = false;
           // window.location.reload(); TUGA WAY
         }
       }
@@ -281,7 +231,7 @@
           this._connecting = true;
           this._disconnected = false;
           this.socket.validateSession();
-          this._onCasperShowOverlay({ 
+          this._onCasperShowOverlay({
             detail: {
               message: 'i18n_connecting_to_server',
               spinner: true,

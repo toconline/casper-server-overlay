@@ -3,7 +3,8 @@
   "description": "Modal overlay that blocks the UI during server interactions",
   "main": "casper-server-overlay.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0"
+    "polymer": "Polymer/polymer#^2.0.0",
+    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.3.4"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",

@@ -183,12 +183,12 @@
         if ( event.detail.icon  ) {
           let icon = event.detail.icon;
           if ( icon.indexOf('/') === -1 ) {
-            this.$.image.src = this.resolveUrl('icons/'+icon+'.svg');
+            this.$.image.src = this.resolveUrl('static/icons/'+icon+'.svg');
           } else {
             this.$.image.src = icon;
           }
         } else {
-          this.$.image.src = this.resolveUrl('icons/default.svg');
+          this.$.image.src = this.resolveUrl('static/icons/default.svg');
         }
         this.visible = true;
       }

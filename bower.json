@@ -4,7 +4,8 @@
   "main": "casper-server-overlay.html",
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.3.4"
+    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.3.4",
+    "casper-icons": "casper2020/casper-icons#^0.2.5"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",

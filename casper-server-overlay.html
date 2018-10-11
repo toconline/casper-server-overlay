@@ -19,6 +19,7 @@
  -->
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../casper-icons/casper-icons.html">
 
 <dom-module id="casper-server-overlay">
   <template>
@@ -68,9 +69,7 @@
     </style>
     <div class="spinner">
       <img id="image" alt="[[description]]">
-      <div id="spinner">
-
-      </div> <!-- spinner placeholder -->
+      <div id="spinner">&nbsp;</div> <!-- spinner placeholder -->
     </div>
     <p>[[description]]</p>
   </template>
@@ -180,12 +179,12 @@
         if ( event.detail.icon  ) {
           let icon = event.detail.icon;
           if ( icon.indexOf('/') === -1 ) {
-            this.$.image.src = this.resolveUrl('static/icons/'+icon+'.svg');
+            this.$.image.src = this.resolveUrl('/bower_components/casper-server-overlay/static/icons/'+icon+'.svg');
           } else {
             this.$.image.src = icon;
           }
         } else {
-          this.$.image.src = this.resolveUrl('static/icons/default.svg');
+          this.$.image.src = this.resolveUrl('/bower_components/casper-server-overlay/static/icons/default.svg');
         }
         this.visible = true;
       }

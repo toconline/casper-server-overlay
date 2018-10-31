@@ -96,6 +96,10 @@
           visible: {
             type: Boolean,
             observer: '_updateVisible'
+          },
+          defaultOpacity: {
+            type: Number,
+            value: 0.7
           }
         };
       }
@@ -104,9 +108,10 @@
         super.ready();
         this.noCancelOnEscKey = true;
         this._visibilityTimer = undefined;
-        this._disconnected = false;
-        this._connecting = false;
-        // this.$.spinner.style.display = 'none';
+        this._disconnected    = false;
+        this._debounceTimeout = 1;
+        this._debounceTimerId = undefined;
+        this._connecting      = false;
 
         this._boundOnCasperShowOverlay  = this._onCasperShowOverlay.bind(this);
         this._boundOnHideOverlay        = this._onHideOverlay.bind(this);
@@ -115,18 +120,17 @@
         this._boundOnCasperSignedIn     = this._onCasperSignedIn.bind(this);
         this._boundCloseByUser          = this._onCloseByUser.bind(this);
 
-        window.addEventListener('casper-show-overlay'   , this._boundOnCasperShowOverlay);
-        window.addEventListener('casper-dismiss-overlay', this._boundOnHideOverlay);
-        window.addEventListener('casper-disconnected'   , this._boundOnCasperDisconnected);
-        window.addEventListener('casper-signed-in'      , this._boundOnCasperSignedIn);
-        document.addEventListener('keydown', this._boundCloseByUser);
-
         this.addEventListener('mousemove', this._moveHandler);
         this.addEventListener('mouseup'  , this._mouseUpHandler);
       }
 
       connectedCallback () {
         super.connectedCallback();
+        window.addEventListener('casper-show-overlay'   , this._boundOnCasperShowOverlay);
+        window.addEventListener('casper-dismiss-overlay', this._boundOnHideOverlay);
+        window.addEventListener('casper-disconnected'   , this._boundOnCasperDisconnected);
+        window.addEventListener('casper-signed-in'      , this._boundOnCasperSignedIn);
+        document.addEventListener('keydown', this._boundCloseByUser);
       }
 
       disconnectedCallback () {
@@ -147,28 +151,39 @@
       }
 
       _onCasperSignedIn (event) {
-        this._disconnected = false;
-        this._connecting = false;
-        this.visible = false;
+        clearTimeout(this._debounceTimerId);
+        this._debounceTimerId = undefined;
+        this._debounceTimeout = 1;
+        this._disconnected    = false;
+        this._connecting      = false;
+        this.visible          = false;
+        this.opacity          = this.defaultOpacity;
       }
 
       _onCasperDisconnected (event) {
         this._disconnected = true;
         this._connecting = false;
-        this._onCasperShowOverlay(event);
+        if ( ! event.detail.silent ) {
+          this._onCasperShowOverlay(event);
+        }
       }
 
       _onCasperShowOverlay (event) {
         this.disconnected = false;
+        if ( event.detail.opacity ) {
+          this._opacity = event.detail.opacity;
+        } else {
+          this._opacity = this.defaultOpacity;
+        }
         if ( event.detail.message ) {
           this.description = event.detail.message;
         }
         if ( event.detail.spinner === true ) {
           this.$.spinner.style.display = 'block';
 
-          if(event.detail.loading_icon != undefined){
+          if ( event.detail.loading_icon != undefined ) {
             var loading_element = document.createElement(event.detail.loading_icon);
-          }else{
+          } else {
             var loading_element = document.createElement('loading-icon-01')
           }
           var before_element  = this.$.spinner.childNodes[0];
@@ -186,7 +201,12 @@
         } else {
           this.$.image.src = this.resolveUrl('/bower_components/casper-server-overlay/static/icons/default.svg');
         }
-        this.visible = true;
+        if ( this.visible === true ) {
+          this._visibilityTimer = setTimeout(() => this._changeOpacity(), 100);
+        } else {
+          this.style.opacity = 0.0;
+          this.visible = true;
+        }
       }
 
       _updateVisible (newValue, oldValue) {
@@ -197,15 +217,15 @@
             clearTimeout(this._visibilityTimer);
             this._visibilityTimer = undefined;
           }
-          return;
         } else {
           this.open();
-          this._visibilityTimer = setTimeout(() => this._makeVisible(), 100);
+          this._visibilityTimer = setTimeout(() => this._changeOpacity(), 100);
         }
       }
 
-      _makeVisible () {
-        this.style.opacity = 0.7;
+      _changeOpacity () {
+        this.style.opacity = this._opacity;
+        this._opacity = this.defaultOpacity;
       }
 
       _moveHandler (event) {
@@ -220,23 +240,33 @@
       _onCloseByUser (event) {
         if ( this._disconnected == false && this._connecting == false ) {
           this.visible = false;
-          // window.location.reload(); TUGA WAY
+          if ( event && event.detail && event.detail.reload ) {
+            window.location.reload();
+          }
         }
       }
 
       _reconnect () {
-        if ( this._disconnected && this._connecting == false ) {
+        if ( this._disconnected === true && this._connecting === false && this._debounceTimerId === undefined ) {
+          this._debounceTimerId = setTimeout(e => this._debounceTimerExpired(e), this._debounceTimeout * 1000);
           this._connecting = true;
           this._disconnected = false;
+          this.socket.checkIfSessionChanged();
           this.socket.validateSession();
           this._onCasperShowOverlay({
             detail: {
-              message: 'i18n_connecting_to_server',
+              message: 'Estabelecendo ligação com o servidor',
               spinner: true,
+              loading_icon: 'loading-icon-03',
               icon: 'connecting'
             }
           });
         }
+      }
+
+      _debounceTimerExpired (event) {
+        this._debounceTimeout = Math.min(this._debounceTimeout * 2, 10);
+        this._debounceTimerId = undefined;
       }
 
     }

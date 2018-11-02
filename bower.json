@@ -6,7 +6,7 @@
     "polymer": "Polymer/polymer#^2.0.0",
     "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^2.3.4",
     "casper-icons": "casper2020/casper-icons#^0.2.6",
-    "casper-socket": "casper2020/casper-socket#^0.1.25"
+    "casper-socket": "casper2020/casper-socket#^0.1.26"
   },
   "devDependencies": {
     "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",

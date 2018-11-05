@@ -226,16 +226,20 @@
       }
 
       _moveHandler (event) {
-        this._reconnect();
+        if ( this.opened === true ) {
+          this._reconnect();
+        }
       }
 
       _mouseUpHandler (event) {
-        this._reconnect();
-        this._onCloseByUser();
+        if ( this.opened === true ) {
+          this._reconnect();
+          this._onCloseByUser();
+        }
       }
 
       _onCloseByUser (event) {
-        if ( this._disconnected === false && this._connecting === false ) {
+        if ( this.opened === true && this._connecting === false ) {
           if ( event && event.detail && event.detail.reload ) {
             window.location.reload();
           } else {

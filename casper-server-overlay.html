@@ -185,7 +185,7 @@
         } else {
           this._opacity = this.defaultOpacity;
         }
-        if ( event.detail.message ) {
+        if ( (event.detail).hasOwnProperty('message') ) {
           this.description = event.detail.message;
         }
         if ( event.detail.spinner === true ) {

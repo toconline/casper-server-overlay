@@ -95,6 +95,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
   ready () {
     super.ready();
     this.noCancelOnEscKey = true;
+    this.noCancelOnOutsideClick = false;
     this._visibilityTimer = undefined;
     this._disconnected    = false;
     this._debounceTimeout = 1;
@@ -138,18 +139,20 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
   }
 
   _onHideOverlay (event) {
-    //console.log("--- Hide overlay");
-    this.style.opacity = 0.0;
-    if ( this._visibilityTimer ) {
-      clearTimeout(this._visibilityTimer);
-      this._visibilityTimer = undefined;
+    // console.log("--- Hide overlay", this.noCancelOnOutsideClick);
+    if (this.noCancelOnOutsideClick === false) {
+      this.style.opacity = 0.0;
+      if ( this._visibilityTimer ) {
+        clearTimeout(this._visibilityTimer);
+        this._visibilityTimer = undefined;
+      }
+      if ( this._debounceTimerId ) {
+        clearTimeout(this._debounceTimerId);
+        this._debounceTimerId = undefined;
+      }
+      this._connecting = false;
+      this.close();
     }
-    if ( this._debounceTimerId ) {
-      clearTimeout(this._debounceTimerId);
-      this._debounceTimerId = undefined;
-    }
-    this._connecting = false;
-    this.close();
   }
 
   _onCasperSignedIn (event) {
@@ -169,32 +172,25 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
   }
 
   _onCasperShowOverlay (event) {
-    //console.log("+++ show overlay: ", event.detail);
+    // console.log("+++ show overlay: ", event.detail);
 
     this.disconnected = false;
-    if ( event.detail.opacity ) {
-      this._opacity = event.detail.opacity;
-    } else {
-      this._opacity = this.defaultOpacity;
-    }
+    this._opacity = event.detail.opacity ? event.detail.opacity : this.defaultOpacity;
+
     if ( (event.detail).hasOwnProperty('message') ) {
       this.description = event.detail.message;
     }
     if ( event.detail.spinner === true ) {
       this.$.spinner.style.display = 'block';
-
-      if ( event.detail.loading_icon != undefined ) {
-        var loading_element = document.createElement(event.detail.loading_icon);
-      } else {
-        var loading_element = document.createElement('loading-icon-01')
-      }
-      var before_element  = this.$.spinner.childNodes[0];
-      this.$.spinner.replaceChild(loading_element, before_element);
+      const loadingElement = document.createElement((event.detail.loading_icon != undefined ? event.detail.loading_icon : 'loading-icon-01'));
+      const beforeElement = this.$.spinner.childNodes[0];
+      this.$.spinner.replaceChild(loadingElement, beforeElement);
     } else {
       this.$.spinner.style.display = 'none';
     }
+    
     if ( event.detail.icon  ) {
-      let icon = event.detail.icon;
+      const icon = event.detail.icon;
       if ( icon.indexOf('/') === -1 ) {
         this.$.image.src = this.resolveUrl(`/node_modules/@casper2020/casper-server-overlay/static/icons/${icon}.svg`);
       } else {
@@ -203,13 +199,19 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
     } else {
       this.$.image.src = this.resolveUrl('/node_modules/@casper2020/casper-server-overlay/static/icons/default.svg');
     }
+
     if (!this.opened) {
       this.open();
     }
+
+    this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
+
     if ( this._visibilityTimer ) {
       clearTimeout(this._visibilityTimer);
     }
+
     this._visibilityTimer = setTimeout((e) => this._changeOpacity(e), 100);
+
   }
 
   _changeOpacity () {

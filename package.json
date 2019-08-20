@@ -10,8 +10,8 @@
   },
   "main": "casper-server-overlay.js",
   "dependencies": {
-    "@casper2020/casper-icons": "^1.0.0-rc.1",
-    "@casper2020/casper-socket": "^1.0.0-rc.1",
+    "@casper2020/casper-icons": "^1.x",
+    "@casper2020/casper-socket": "^2.x",
     "@polymer/iron-overlay-behavior": "^3.0.0",
     "@polymer/polymer": "^3.0.0"
   },

@@ -188,7 +188,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
     } else {
       this.$.spinner.style.display = 'none';
     }
-    
+
     if ( event.detail.icon  ) {
       const icon = event.detail.icon;
       if ( icon.indexOf('/') === -1 ) {
@@ -197,7 +197,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
         this.$.image.src = icon;
       }
     } else {
-      this.$.image.src = this.resolveUrl('/node_modules/@casper2020/casper-server-overlay/static/icons/default.svg');
+      this.$.image.src = '';
     }
 
     if (!this.opened) {

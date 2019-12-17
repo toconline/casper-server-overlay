@@ -12,8 +12,8 @@
   "dependencies": {
     "@casper2020/casper-icons": "^1.x",
     "@casper2020/casper-socket": "^2.x",
-    "@polymer/iron-overlay-behavior": "^3.0.0",
-    "@polymer/polymer": "^3.0.0"
+    "@polymer/iron-overlay-behavior": "^3.x",
+    "@polymer/polymer": "^3.x"
   },
   "devDependencies": {
     "@polymer/iron-demo-helpers": "^3.0.0",

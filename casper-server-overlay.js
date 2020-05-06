@@ -189,7 +189,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
     if ( event.detail.icon  ) {
       const icon = event.detail.icon;
       if ( icon.indexOf('/') === -1 ) {
-        this.$.image.src = this.resolveUrl(`/node_modules/@casper2020/casper-server-overlay/static/icons/${icon}.svg`);
+        this.$.image.src = this.resolveUrl(`/node_modules/@cloudware-casper/casper-server-overlay/static/icons/${icon}.svg`);
       } else {
         this.$.image.src = icon;
       }

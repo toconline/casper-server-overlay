@@ -15,7 +15,7 @@
   resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-socket/3.2.3/9929799d2bbaf178972a57e4797c6732928f001c85e628a35db6479fd6ceded9#6c331cbaacefb6d4ef5cc22db2b288cb65fb9bfc"
   integrity sha512-KAowLtfyn2yCA9jO6A0ASw+nD9i++Wl2m1K3pkU0TgZIX4INGWiGq7utusBwzsSQW3sYXi69TVnthapipQwULQ==
   dependencies:
-    "@polymer/polymer" "^3.x"
+    "@polymer/polymer" "^4.x"
 
 "@polymer/font-roboto@^3.0.0-pre.25":
   version "3.0.2"

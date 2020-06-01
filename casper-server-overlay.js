@@ -65,6 +65,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
           color: #D8D8D8;
           font-size: 1.5em;
           line-height: 1.5em;
+          width: 80%;
         }
 
       </style>

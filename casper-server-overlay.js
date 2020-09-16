@@ -18,6 +18,12 @@
   -
  */
 
+import '@cloudware-casper/casper-icons/loading_components/loading-icon-01.js';
+import '@cloudware-casper/casper-icons/loading_components/loading-icon-02.js';
+import '@cloudware-casper/casper-icons/loading_components/loading-icon-03.js';
+import '@cloudware-casper/casper-icons/loading_components/loading-icon-04.js';
+import '@cloudware-casper/casper-icons/loading_components/loading-icon-05.js';
+
 import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import { IronOverlayBehavior } from '@polymer/iron-overlay-behavior/iron-overlay-behavior.js';

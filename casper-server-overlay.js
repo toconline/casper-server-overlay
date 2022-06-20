@@ -41,7 +41,7 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
           width: 100%;
           height: 100vh;
           opacity: 1;
-          transition: opacity 3s;
+          transition: opacity 3s ease-in;
           z-index: 8000;
           fill: white;
         }

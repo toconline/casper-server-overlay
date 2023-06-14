@@ -23,11 +23,15 @@ class CasperServerOverlayLit extends LitElement {
     },
     defaultOpacity: {
       type: Number
+    },
+    _customOpacity: {
+      type: Number
     }
   };
 
   static styles = css`
     .server-overlay {
+      outline: none;
       border: none;
       padding: 0;
       flex-direction: column;
@@ -37,14 +41,23 @@ class CasperServerOverlayLit extends LitElement {
       max-height: 70vh;
       background-color: transparent;
       fill: #FFF;
-    }
-
-    .server-overlay[open] {
+      /* The default is display: none, which prevents transitions from working, so its display must always be flex */
       display: flex;
     }
 
+    .server-overlay,
     .server-overlay::backdrop {
-      background-color: rgba(204, 204, 204, 65%);
+      opacity: 0;
+      transition: opacity 3s ease-in;
+    }
+
+    .server-overlay::backdrop {
+      background-color: #000;
+    }
+
+    .server-overlay[visible],
+    .server-overlay[visible]::backdrop {
+      opacity: 0.7;,
     }
 
     .server-overlay__status {
@@ -85,7 +98,7 @@ class CasperServerOverlayLit extends LitElement {
     this.noCancelOnOutsideClick = false;
     this.defaultOpacity = 0.7;
 
-    this._visibilityTimer = undefined;
+    this._customOpacity = undefined;
     this._disconnected = false;
     this._debounceTimeout = 1;
     this._debounceTimerId = undefined;
@@ -109,18 +122,10 @@ class CasperServerOverlayLit extends LitElement {
     window.addEventListener('casper-signed-in', this._boundOnCasperSignedIn);
     window.addEventListener('casper-disconnected', this._boundOnCasperDisconnected);
     document.addEventListener('keydown', this._boundCloseByUser);
-
-    this._opacity = this.defaultOpacity;
-    this.style.opacity = this._opacity;
   }
 
   disconnectedCallback () {
     super.disconnectedCallback();
-
-    if (this._visibilityTimer) {
-      clearTimeout(this._visibilityTimer);
-      this._visibilityTimer = undefined;
-    }
 
     window.removeEventListener('casper-show-overlay', this._boundOnCasperShowOverlay);
     window.removeEventListener('casper-dismiss-overlay', this._boundOnHideOverlay);
@@ -135,11 +140,23 @@ class CasperServerOverlayLit extends LitElement {
   //***************************************************************************************//
   
   render () {
+    /* ::backdrop doesn't inherit from other elements and can't be selected via js, which is why we have to set its custom opacity like this */
+    const opacityStyle = html`
+      <style> 
+        .server-overlay[visible],
+        .server-overlay[visible]::backdrop { 
+          opacity: ${this._customOpacity} !important;
+        } 
+      </style>
+    `;
+
     return html`
+      ${this._customOpacity !== undefined ? opacityStyle : ''}
+    
       <dialog id="overlay" class="server-overlay">
         <div class="server-overlay__status">
           <img id="image" class="server-overlay__image" alt=${this.description}>
-          <!-- spinner placeholder -->
+          <!-- Spinner placeholder -->
           <div id="spinner" class="server-overlay__spinner">&nbsp;</div>
         </div>
         <p class="server-overlay__description">${this.description}</p>
@@ -163,10 +180,15 @@ class CasperServerOverlayLit extends LitElement {
 
   open () {
     this._serverOverlayEl.showModal();
+    this._serverOverlayEl.setAttribute('visible', '');
   }
 
   close () {
-    this._serverOverlayEl.close();
+    if (this._serverOverlayEl.open) this._serverOverlayEl.removeAttribute('visible');
+
+    setTimeout(() => {
+      this._serverOverlayEl.close();
+    }, 3000);
   }
 
 
@@ -177,12 +199,6 @@ class CasperServerOverlayLit extends LitElement {
 
   _onHideOverlay (event) {
     //console.log("--- Hide overlay", this.noCancelOnOutsideClick);
-
-    this.style.opacity = 0.0;
-    if (this._visibilityTimer) {
-      clearTimeout(this._visibilityTimer);
-      this._visibilityTimer = undefined;
-    }
 
     if (this._debounceTimerId) {
       clearTimeout(this._debounceTimerId);
@@ -198,7 +214,6 @@ class CasperServerOverlayLit extends LitElement {
     this._debounceTimeout = 1;
     this._disconnected = false;
     this._connecting = false;
-    this.opacity = this.defaultOpacity;
   }
 
   _onCasperDisconnected (event) {
@@ -210,12 +225,9 @@ class CasperServerOverlayLit extends LitElement {
   _onCasperShowOverlay (event) {
     //console.log("+++ show overlay: ", event.detail);
 
-    this.disconnected = false;
-    this._opacity = event.detail.opacity ? event.detail.opacity : this.defaultOpacity;
 
-    if ((event.detail).hasOwnProperty('message')) {
-      this.description = event.detail.message;
-    }
+    if (event.detail.hasOwnProperty('opacity')) this._customOpacity = event.detail.opacity;
+    if (event.detail.hasOwnProperty('message')) this.description = event.detail.message;
 
     if (event.detail.spinner === true) {
       this._spinnerEl.style.display = 'block';
@@ -239,14 +251,6 @@ class CasperServerOverlayLit extends LitElement {
     if (!this._serverOverlayEl.open) this.open();
 
     this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
-
-    if (this._visibilityTimer) clearTimeout(this._visibilityTimer);
-    this._visibilityTimer = setTimeout((e) => this._changeOpacity(e), 100);
-  }
-
-  _changeOpacity () {
-    this.style.opacity = this._opacity;
-    this._opacity = this.defaultOpacity;
   }
 
   _moveHandler (event) {

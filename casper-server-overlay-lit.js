@@ -236,7 +236,7 @@ class CasperServerOverlayLit extends LitElement {
       this._imageEl.style.display = 'none';
     }
 
-    if (!this.opened) this.open();
+    if (!this._serverOverlayEl.open) this.open();
 
     this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
 
@@ -250,13 +250,13 @@ class CasperServerOverlayLit extends LitElement {
   }
 
   _moveHandler (event) {
-    if (this.opened === true) {
+    if (this._serverOverlayEl.open) {
       this._reconnect();
     }
   }
 
   _mouseUpHandler (event) {
-    if (this.opened === true) {
+    if (this._serverOverlayEl.open) {
       this._reconnect();
       this._onCloseByUser();
     }
@@ -274,7 +274,7 @@ class CasperServerOverlayLit extends LitElement {
   }
 
   _onCloseByUser (event) {
-    if (this.opened && !this._connecting) {
+    if (this._serverOverlayEl.open && !this._connecting) {
       if (event?.detail?.reload) {
         window.location.reload();
       } else {

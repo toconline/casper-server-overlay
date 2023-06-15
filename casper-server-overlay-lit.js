@@ -55,8 +55,8 @@ class CasperServerOverlayLit extends LitElement {
       background-color: #000;
     }
 
-    .server-overlay[visible],
-    .server-overlay[visible]::backdrop {
+    :host([visible]) .server-overlay,
+    :host([visible]) .server-overlay::backdrop {
       opacity: 0.7;,
     }
 
@@ -92,8 +92,7 @@ class CasperServerOverlayLit extends LitElement {
   constructor () {
     super();
 
-    this.description = 'Teste';
-
+    this.description = '';
     this.noCancelOnEscKey = true;
     this.noCancelOnOutsideClick = false;
     this.defaultOpacity = 0.7;
@@ -143,8 +142,8 @@ class CasperServerOverlayLit extends LitElement {
     /* ::backdrop doesn't inherit from other elements and can't be selected via js, which is why we have to set its custom opacity like this */
     const opacityStyle = html`
       <style> 
-        .server-overlay[visible],
-        .server-overlay[visible]::backdrop { 
+        :host([visible]) .server-overlay,
+        :host([visible]) .server-overlay::backdrop { 
           opacity: ${this._customOpacity} !important;
         } 
       </style>
@@ -180,11 +179,11 @@ class CasperServerOverlayLit extends LitElement {
 
   open () {
     this._serverOverlayEl.showModal();
-    this._serverOverlayEl.setAttribute('visible', '');
+    this.setAttribute('visible', '');
   }
 
   close () {
-    if (this._serverOverlayEl.open) this._serverOverlayEl.removeAttribute('visible');
+    if (this._serverOverlayEl.open) this.removeAttribute('visible');
 
     setTimeout(() => {
       this._serverOverlayEl.close();
@@ -222,10 +221,12 @@ class CasperServerOverlayLit extends LitElement {
     if (!event.detail.silent) this._onCasperShowOverlay(event);
   }
 
-  _onCasperShowOverlay (event) {
+  async _onCasperShowOverlay (event) {
     //console.log("+++ show overlay: ", event.detail);
 
+    if (!this._serverOverlayEl) await this.updateComplete;
 
+    this._disconnected = false;
     if (event.detail.hasOwnProperty('opacity')) this._customOpacity = event.detail.opacity;
     if (event.detail.hasOwnProperty('message')) this.description = event.detail.message;
 
@@ -248,19 +249,18 @@ class CasperServerOverlayLit extends LitElement {
       this._imageEl.style.display = 'none';
     }
 
-    if (!this._serverOverlayEl.open) this.open();
-
     this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
+    if (!this._serverOverlayEl.open) this.open();
   }
 
   _moveHandler (event) {
-    if (this._serverOverlayEl.open) {
+    if (this._serverOverlayEl?.open) {
       this._reconnect();
     }
   }
 
   _mouseUpHandler (event) {
-    if (this._serverOverlayEl.open) {
+    if (this._serverOverlayEl?.open) {
       this._reconnect();
       this._onCloseByUser();
     }
@@ -272,18 +272,18 @@ class CasperServerOverlayLit extends LitElement {
 
     // Needed otherwise it would call the dialog's native close method
     event.preventDefault();
-
-    if (this.noCancelOnEscKey) return;
-    this.close();
   }
 
   _onCloseByUser (event) {
     if (this._serverOverlayEl.open && !this._connecting) {
       if (event?.detail?.reload) {
         window.location.reload();
+
       } else {
-        if (!this.noCancelOnOutsideClick) {
-          this._onHideOverlay();
+        if (event?.key === 'Escape') {
+          if (!this.noCancelOnEscKey) this._onHideOverlay();
+        } else {
+          if (!this.noCancelOnOutsideClick) this._onHideOverlay();
         }
       }
     }

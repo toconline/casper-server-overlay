@@ -193,6 +193,7 @@ class CasperServerOverlayLit extends LitElement {
   close () {
     if (this._serverOverlayEl.open) this.removeAttribute('visible');
 
+    // 800 is the transition's duration
     setTimeout(() => {
       this._serverOverlayEl.close();
     }, 800);
@@ -256,7 +257,9 @@ class CasperServerOverlayLit extends LitElement {
       this._imageEl.style.display = 'none';
     }
 
-    this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
+    this.noCancelOnOutsideClick = event.detail.hasOwnProperty('noCancelOnOutsideClick') ? event.detail.noCancelOnOutsideClick : false;
+    this.noCancelOnEscKey = event.detail.hasOwnProperty('noCancelOnEscKey') ? event.detail.noCancelOnEscKey : true;
+    
     if (!this._serverOverlayEl.open) this.open();
   }
 

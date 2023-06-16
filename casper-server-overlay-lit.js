@@ -30,6 +30,14 @@ class CasperServerOverlayLit extends LitElement {
   };
 
   static styles = css`
+    :host {
+      pointer-events: none;
+    }
+
+    :host([visible]) {
+      pointer-events: auto;
+    }
+
     .server-overlay {
       outline: none;
       border: none;

@@ -48,7 +48,7 @@ class CasperServerOverlayLit extends LitElement {
     .server-overlay,
     .server-overlay::backdrop {
       opacity: 0;
-      transition: opacity 3s ease-in;
+      transition: opacity 0.8s ease-in;
     }
 
     .server-overlay::backdrop {
@@ -187,7 +187,7 @@ class CasperServerOverlayLit extends LitElement {
 
     setTimeout(() => {
       this._serverOverlayEl.close();
-    }, 3000);
+    }, 800);
   }
 
 
@@ -226,7 +226,6 @@ class CasperServerOverlayLit extends LitElement {
 
     if (!this._serverOverlayEl) await this.updateComplete;
 
-    this._disconnected = false;
     if (event.detail.hasOwnProperty('opacity')) this._customOpacity = event.detail.opacity;
     if (event.detail.hasOwnProperty('message')) this.description = event.detail.message;
 

@@ -18,92 +18,114 @@
   -
  */
 
+import { LitElement, html, css } from 'lit';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-01.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-02.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-03.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-04.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-05.js';
 
-import { mixinBehaviors } from '@polymer/polymer/lib/legacy/class.js';
-import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import { IronOverlayBehavior } from '@polymer/iron-overlay-behavior/iron-overlay-behavior.js';
 
-class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerElement) {
-  static get template () {
-    return html`
-      <style>
-        :host {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: black;
-          width: 100%;
-          height: 100vh;
-          opacity: 1;
-          transition: opacity 3s ease-in;
-          z-index: 8000;
-          fill: white;
-        }
+class CasperServerOverlay extends LitElement {
+  static properties = {
+    socket: {
+      type: Object
+    },
+    description: {
+      type: String
+    },
+    noCancelOnEscKey: {
+      type: Boolean
+    },
+    noCancelOnOutsideClick: {
+      type: Boolean
+    },
+    defaultOpacity: {
+      type: Number
+    },
+    _customOpacity: {
+      type: Number
+    }
+  };
 
-        .spinner {
-          position: relative;
-          width: 200px;
-          height: 200px;
-        }
+  static styles = css`
+    :host {
+      pointer-events: none;
+    }
 
-        svg {
-          position: absolute;
-          top: 50px;
-          left: 50px;
-        }
+    :host([visible]) {
+      pointer-events: auto;
+    }
 
-        #image {
-          position: absolute;
-          width: 200px;
-          height: 200px;
-          top: 0;
-          left: 0;
-        }
+    .server-overlay {
+      outline: none;
+      border: none;
+      padding: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 80vw;
+      max-height: 70vh;
+      background-color: transparent;
+      fill: #FFF;
+      /* The default is display: none, which prevents transitions from working, so its display must always be flex */
+      display: flex;
+    }
 
-        p {
-          text-align: center;
-          color: #D8D8D8;
-          font-size: 1.5em;
-          line-height: 1.5em;
-          width: 80%;
-        }
+    .server-overlay,
+    .server-overlay::backdrop {
+      opacity: 0;
+      transition: opacity 0.8s ease-in;
+    }
 
-      </style>
-      <div class="spinner">
-        <img id="image" alt="[[description]]">
-        <div id="spinner">&nbsp;</div> <!-- spinner placeholder -->
-      </div>
-      <p>[[description]]</p>
-    `;
-  }
+    .server-overlay::backdrop {
+      background-color: #000;
+    }
 
-  static get is () {
-    return 'casper-server-overlay';
-  }
+    :host([visible]) .server-overlay,
+    :host([visible]) .server-overlay::backdrop {
+      opacity: 0.7;
+    }
 
-  static get properties () {
-    return {
-      socket: Object,
-      description: String,
-      icon: Object,
-      defaultOpacity: {
-        type: Number,
-        value: 0.7
-      }
-    };
-  }
+    .server-overlay__status {
+      position: relative;
+      width: 200px;
+      height: 200px;
+    }
 
-  ready () {
-    super.ready();
+    svg {
+      position: absolute;
+      top: 50px;
+      left: 50px;
+    }
+
+    .server-overlay__image,
+    .server-overlay__spinner {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    .server-overlay__description {
+      text-align: center;
+      color: #D8D8D8;
+      font-size: 1.5rem;
+      line-height: 1.5em;
+    }
+  `;
+
+  
+  constructor () {
+    super();
+
+    this.description = '';
     this.noCancelOnEscKey = true;
     this.noCancelOnOutsideClick = false;
-    this._visibilityTimer = undefined;
+    this.defaultOpacity = 0.7;
+
+    this._customOpacity = undefined;
     this._disconnected = false;
     this._debounceTimeout = 1;
     this._debounceTimerId = undefined;
@@ -111,51 +133,106 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
 
     this._boundOnCasperShowOverlay = this._onCasperShowOverlay.bind(this);
     this._boundOnHideOverlay = this._onHideOverlay.bind(this);
+    this._boundOnCasperSignedIn = this._onCasperSignedIn.bind(this);
     this._boundOnCasperDisconnected = this._onCasperDisconnected.bind(this);
-    this._boundOnCasperSignedIn = this._onCasperSignedIn.bind(this);
-    this._boundOnCasperSignedIn = this._onCasperSignedIn.bind(this);
     this._boundCloseByUser = this._onCloseByUser.bind(this);
-
-    this.addEventListener('mousemove', this._moveHandler);
-    this.addEventListener('mouseup', this._mouseUpHandler);
   }
 
   connectedCallback () {
     super.connectedCallback();
+
+    this.addEventListener('mousemove', this._moveHandler);
+    this.addEventListener('mouseup', this._mouseUpHandler);
+    
     window.addEventListener('casper-show-overlay', this._boundOnCasperShowOverlay);
     window.addEventListener('casper-dismiss-overlay', this._boundOnHideOverlay);
-    window.addEventListener('casper-disconnected', this._boundOnCasperDisconnected);
     window.addEventListener('casper-signed-in', this._boundOnCasperSignedIn);
+    window.addEventListener('casper-disconnected', this._boundOnCasperDisconnected);
     document.addEventListener('keydown', this._boundCloseByUser);
-
-    this._opacity = this.defaultOpacity;
-    this.style.opacity = this._opacity;
   }
 
   disconnectedCallback () {
     super.disconnectedCallback();
-    if (this._visibilityTimer) {
-      clearTimeout(this._visibilityTimer);
-      this._visibilityTimer = undefined;
-    }
+
     window.removeEventListener('casper-show-overlay', this._boundOnCasperShowOverlay);
     window.removeEventListener('casper-dismiss-overlay', this._boundOnHideOverlay);
-    window.removeEventListener('casper-disconnected', this._boundOnCasperDisconnected);
     window.removeEventListener('casper-signed-in', this._boundOnCasperSignedIn);
+    window.removeEventListener('casper-disconnected', this._boundOnCasperDisconnected);
     document.removeEventListener('keydown', this._boundCloseByUser);
   }
 
+
+  //***************************************************************************************//
+  //                               ~~~ Lit lifecycle  ~~~                                  //
+  //***************************************************************************************//
+  
+  render () {
+    /* ::backdrop doesn't inherit from other elements and can't be selected via js, which is why we have to set its custom opacity like this */
+    const opacityStyle = html`
+      <style> 
+        :host([visible]) .server-overlay,
+        :host([visible]) .server-overlay::backdrop { 
+          opacity: ${this._customOpacity} !important;
+        } 
+      </style>
+    `;
+
+    return html`
+      ${this._customOpacity !== undefined ? opacityStyle : ''}
+    
+      <dialog id="overlay" class="server-overlay">
+        <div class="server-overlay__status">
+          <img id="image" class="server-overlay__image" alt=${this.description}>
+          <!-- Spinner placeholder -->
+          <div id="spinner" class="server-overlay__spinner">&nbsp;</div>
+        </div>
+        <p class="server-overlay__description">${this.description}</p>
+      </dialog>
+    `;
+  }
+
+  firstUpdated () {
+    this._serverOverlayEl = this.shadowRoot.querySelector('#overlay');
+    this._imageEl = this.shadowRoot.querySelector('#image');
+    this._spinnerEl = this.shadowRoot.querySelector('#spinner');
+
+    this._serverOverlayEl.addEventListener('cancel', this._cancelHandler.bind(this));
+  }
+
+
+
+  //***************************************************************************************//
+  //                              ~~~ Public methods  ~~~                                  //
+  //***************************************************************************************//
+
+  open () {
+    this._serverOverlayEl.showModal();
+    this.setAttribute('visible', '');
+  }
+
+  close () {
+    if (this._serverOverlayEl.open) this.removeAttribute('visible');
+
+    // 800 is the transition's duration
+    setTimeout(() => {
+      this._serverOverlayEl.close();
+    }, 800);
+  }
+
+
+  
+  //***************************************************************************************//
+  //                              ~~~ Private methods  ~~~                                 //
+  //***************************************************************************************//
+
   _onHideOverlay (event) {
     //console.log("--- Hide overlay", this.noCancelOnOutsideClick);
-    this.style.opacity = 0.0;
-    if (this._visibilityTimer) {
-      clearTimeout(this._visibilityTimer);
-      this._visibilityTimer = undefined;
-    }
+
     if (this._debounceTimerId) {
       clearTimeout(this._debounceTimerId);
       this._debounceTimerId = undefined;
     }
+
     this._connecting = false;
     this.close();
   }
@@ -165,93 +242,90 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
     this._debounceTimeout = 1;
     this._disconnected = false;
     this._connecting = false;
-    this.opacity = this.defaultOpacity;
   }
 
   _onCasperDisconnected (event) {
     this._disconnected = true;
     this._connecting = false;
-    if (!event.detail.silent) {
-      this._onCasperShowOverlay(event);
-    }
+    if (!event.detail.silent) this._onCasperShowOverlay(event);
   }
 
-  _onCasperShowOverlay (event) {
+  async _onCasperShowOverlay (event) {
     //console.log("+++ show overlay: ", event.detail);
-    this.disconnected = false;
-    this._opacity = event.detail.opacity ? event.detail.opacity : this.defaultOpacity;
 
-    if ((event.detail).hasOwnProperty('message')) {
-      this.description = event.detail.message;
-    }
+    if (!this._serverOverlayEl) await this.updateComplete;
+
+    if (event.detail.hasOwnProperty('opacity')) this._customOpacity = event.detail.opacity;
+    if (event.detail.hasOwnProperty('message')) this.description = event.detail.message;
+
     if (event.detail.spinner === true) {
-      this.$.spinner.style.display = 'block';
+      this._spinnerEl.style.display = 'block';
       const loadingElement = document.createElement((event.detail.loading_icon != undefined ? event.detail.loading_icon : 'loading-icon-01'));
-      const beforeElement = this.$.spinner.childNodes[0];
-      this.$.spinner.replaceChild(loadingElement, beforeElement);
+      const beforeElement = this._spinnerEl.childNodes[0];
+      this._spinnerEl.replaceChild(loadingElement, beforeElement);
     } else {
-      this.$.spinner.style.display = 'none';
+      this._spinnerEl.style.display = 'none';
     }
 
     if (event.detail.icon) {
       const icon = event.detail.icon;
 
-      this.$.image.style.display = '';
-      this.$.image.src = icon.indexOf('/') === -1 ? `/node_modules/@cloudware-casper/casper-server-overlay/static/icons/${icon}.svg` : icon;
+      this._imageEl.style.display = '';
+      this._imageEl.src = icon.indexOf('/') === -1 ? `/node_modules/@cloudware-casper/casper-server-overlay/static/icons/${icon}.svg` : icon;
     } else {
-      this.$.image.src = '';
-      this.$.image.style.display = 'none';
+      this._imageEl.src = '';
+      this._imageEl.style.display = 'none';
     }
 
-    if (!this.opened) {
-      this.open();
-    }
-
-    this.noCancelOnOutsideClick = (event.detail).hasOwnProperty('noCancelOnOutsideClick');
-
-    if (this._visibilityTimer) {
-      clearTimeout(this._visibilityTimer);
-    }
-
-    this._visibilityTimer = setTimeout((e) => this._changeOpacity(e), 100);
-
-  }
-
-  _changeOpacity () {
-    this.style.opacity = this._opacity;
-    this._opacity = this.defaultOpacity;
+    this.noCancelOnOutsideClick = event.detail.hasOwnProperty('noCancelOnOutsideClick') ? event.detail.noCancelOnOutsideClick : false;
+    this.noCancelOnEscKey = event.detail.hasOwnProperty('noCancelOnEscKey') ? event.detail.noCancelOnEscKey : true;
+    
+    if (!this._serverOverlayEl.open) this.open();
   }
 
   _moveHandler (event) {
-    if (this.opened === true) {
+    if (this._serverOverlayEl?.open) {
       this._reconnect();
     }
   }
 
   _mouseUpHandler (event) {
-    if (this.opened === true) {
+    if (this._serverOverlayEl?.open) {
       this._reconnect();
       this._onCloseByUser();
     }
   }
 
+  // Fired when user presses the 'esc' key
+  _cancelHandler (event) {
+    if (!event) return;
+
+    // Needed otherwise it would call the dialog's native close method
+    event.preventDefault();
+  }
+
   _onCloseByUser (event) {
-    if (this.opened === true && this._connecting === false) {
-      if (event && event.detail && event.detail.reload) {
+    if (this._serverOverlayEl.open && !this._connecting) {
+      if (event?.detail?.reload) {
         window.location.reload();
+
       } else {
-        if (this.noCancelOnOutsideClick === false) {
-          this._onHideOverlay();
+        if (event?.key === 'Escape') {
+          if (!this.noCancelOnEscKey) this._onHideOverlay();
+        } else {
+          if (!this.noCancelOnOutsideClick) this._onHideOverlay();
         }
       }
     }
   }
 
   _reconnect () {
-    if (this._disconnected === true && this._connecting === false && this._debounceTimerId === undefined) {
+    if (this._disconnected && !this._connecting && this._debounceTimerId === undefined) {
       this._debounceTimerId = setTimeout(e => this._debounceTimerExpired(e), this._debounceTimeout * 1000);
+
       this._connecting = true;
       this._disconnected = false;
+      
       this.socket.checkIfSessionChanged();
       this.socket.validateSession();
     }
@@ -263,4 +337,4 @@ class CasperServerOverlay extends mixinBehaviors([IronOverlayBehavior], PolymerE
   }
 }
 
-window.customElements.define(CasperServerOverlay.is, CasperServerOverlay);
+customElements.define('casper-server-overlay', CasperServerOverlay);

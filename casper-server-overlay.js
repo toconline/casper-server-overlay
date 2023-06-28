@@ -19,6 +19,8 @@
  */
 
 import { LitElement, html, css } from 'lit';
+import './casper-server-overlay-iconset.js';
+import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-01.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-02.js';
 import '@cloudware-casper/casper-icons/loading_components/loading-icon-03.js';
@@ -45,6 +47,9 @@ class CasperServerOverlay extends LitElement {
     },
     _customOpacity: {
       type: Number
+    },
+    _icon: {
+      type: String
     }
   };
 
@@ -67,6 +72,7 @@ class CasperServerOverlay extends LitElement {
       max-width: 80vw;
       max-height: 70vh;
       background-color: transparent;
+      color: #D8D8D8;
       fill: #FFF;
       /* The default is display: none, which prevents transitions from working, so its display must always be flex */
       display: flex;
@@ -99,7 +105,7 @@ class CasperServerOverlay extends LitElement {
       left: 50px;
     }
 
-    .server-overlay__image,
+    .server-overlay__icon,
     .server-overlay__spinner {
       position: absolute;
       width: 100%;
@@ -110,7 +116,6 @@ class CasperServerOverlay extends LitElement {
 
     .server-overlay__description {
       text-align: center;
-      color: #D8D8D8;
       font-size: 1.5rem;
       line-height: 1.5em;
     }
@@ -125,6 +130,7 @@ class CasperServerOverlay extends LitElement {
     this.noCancelOnOutsideClick = false;
     this.defaultOpacity = 0.7;
 
+    this._icon = '';
     this._customOpacity = undefined;
     this._disconnected = false;
     this._debounceTimeout = 1;
@@ -182,7 +188,7 @@ class CasperServerOverlay extends LitElement {
     
       <dialog id="overlay" class="server-overlay">
         <div class="server-overlay__status">
-          <img id="image" class="server-overlay__image" alt=${this.description}>
+          <casper-icon id="icon" class="server-overlay__icon" icon=${this._icon} ?hidden=${!this._icon}></casper-icon>
           <!-- Spinner placeholder -->
           <div id="spinner" class="server-overlay__spinner">&nbsp;</div>
         </div>
@@ -193,7 +199,7 @@ class CasperServerOverlay extends LitElement {
 
   firstUpdated () {
     this._serverOverlayEl = this.shadowRoot.querySelector('#overlay');
-    this._imageEl = this.shadowRoot.querySelector('#image');
+    this._iconEl = this.shadowRoot.querySelector('#icon');
     this._spinnerEl = this.shadowRoot.querySelector('#spinner');
 
     this._serverOverlayEl.addEventListener('cancel', this._cancelHandler.bind(this));
@@ -268,13 +274,9 @@ class CasperServerOverlay extends LitElement {
     }
 
     if (event.detail.icon) {
-      const icon = event.detail.icon;
-
-      this._imageEl.style.display = '';
-      this._imageEl.src = icon.indexOf('/') === -1 ? `/node_modules/@cloudware-casper/casper-server-overlay/static/icons/${icon}.svg` : icon;
+      this._icon = `overlay-icons:${event.detail.icon}`;
     } else {
-      this._imageEl.src = '';
-      this._imageEl.style.display = 'none';
+      this._icon = '';
     }
 
     this.noCancelOnOutsideClick = event.detail.hasOwnProperty('noCancelOnOutsideClick') ? event.detail.noCancelOnOutsideClick : false;

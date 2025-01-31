@@ -20,12 +20,12 @@
 
 import { LitElement, html, css } from 'lit';
 import './casper-server-overlay-iconset.js';
-import '@cloudware-casper/casper-icons/casper-icon.js';
-import '@cloudware-casper/casper-icons/loading_components/loading-icon-01.js';
-import '@cloudware-casper/casper-icons/loading_components/loading-icon-02.js';
-import '@cloudware-casper/casper-icons/loading_components/loading-icon-03.js';
-import '@cloudware-casper/casper-icons/loading_components/loading-icon-04.js';
-import '@cloudware-casper/casper-icons/loading_components/loading-icon-05.js';
+import '@toconline/casper-icons/casper-icon.js';
+import '@toconline/casper-icons/loading_components/loading-icon-01.js';
+import '@toconline/casper-icons/loading_components/loading-icon-02.js';
+import '@toconline/casper-icons/loading_components/loading-icon-03.js';
+import '@toconline/casper-icons/loading_components/loading-icon-04.js';
+import '@toconline/casper-icons/loading_components/loading-icon-05.js';
 
 
 class CasperServerOverlay extends LitElement {

@@ -2,13 +2,6 @@
 # yarn lockfile v1
 
 
-"@cloudware-casper/casper-socket@^5.x":
-  version "5.0.1"
-  resolved "https://npm.pkg.github.com/download/@cloudware-casper/casper-socket/5.0.1/73408737ac8812807acc300ca235395756a51c24c0c606a5ada46a163aeccb63#9dbc6fd5d7dd42345561269c139d343ff0d9f595"
-  integrity sha512-NpMb2uw8HbmREOK6r9CNIKTONi/5afiLKJJM1EzkVgkgjJSYV36gnCp80Gfe5tTdF6dtMRUde1Dbtfq3v6ZXjQ==
-  dependencies:
-    "@polymer/polymer" "^3.x"
-
 "@polymer/iron-a11y-keys-behavior@^3.0.0-pre.26":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-a11y-keys-behavior/-/iron-a11y-keys-behavior-3.0.1.tgz#2868ea72912d2007ffab4734684a91f5aac49b84"
@@ -46,6 +39,11 @@
   integrity sha512-KPWnhDZibtqKrUz7enIPOiO4ZQoJNOuLwqrhV2MXzIt3VVnUVJVG5ORz4Z2sgO+UZ+/UZnPD0jqY+jmw/+a9mQ==
   dependencies:
     "@webcomponents/shadycss" "^1.9.1"
+
+"@toconline/casper-socket@^5.x":
+  version "5.6.3"
+  resolved "https://npm.pkg.github.com/download/@toconline/casper-socket/5.6.3/5c76861fbba63e44dd2464ad984364c9f19f7c7e#5c76861fbba63e44dd2464ad984364c9f19f7c7e"
+  integrity sha512-jozoNfROm8pdrAj8KbNfOoopIxH8Z/n9Bc5JMWcjQZvPEynsye/aWUGQ6KuppF1pTJRm3gOGng3uhYyOmLZ6bw==
 
 "@webcomponents/shadycss@^1.9.1":
   version "1.9.6"

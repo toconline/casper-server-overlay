@@ -1,13 +1,13 @@
 {
   "description": "Modal overlay that blocks the UI during server interactions",
-  "name": "@cloudware-casper/casper-server-overlay",
+  "name": "@toconline/casper-server-overlay",
   "version": "4.0.5",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
   "main": "casper-server-overlay.js",
   "dependencies": {
-    "@cloudware-casper/casper-socket": "^5.x",
+    "@toconline/casper-socket": "^5.x",
     "@polymer/iron-overlay-behavior": "^3.x",
     "@polymer/polymer": "^3.x"
   }

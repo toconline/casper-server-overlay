@@ -19,7 +19,7 @@
  */
 
 import { svg }        from 'lit';
-import { CasperIcon } from '@cloudware-casper/casper-icons/casper-icon.js';
+import { CasperIcon } from '@toconline/casper-icons/casper-icon.js';
 
 
 CasperIcon.register('overlay-icons:cloud', svg`
